@@ -27,14 +27,21 @@ public class UserEntity {
     @Column(nullable = false, length = 15)
     private String password;
 
-    @Column
+    @Column(nullable = false)
+    private Integer money; // Integer로 변경
 
-
-    public static UserEntity toSaveEntity(UserDto userDto){
-        UserEntity userEntity = new UserEntity();
-        userEntity.setUserId(userDto.getUserId());
-        userEntity.setPassword(userDto.getPassword());
-        return userEntity;
+    @PrePersist
+    public void prePersist() {
+        if (this.money == null) { // null이면 기본값 설정
+            this.money = 10000000;
+        }
     }
 
+    public static UserEntity toSaveEntity(UserDto userDto){
+        return UserEntity.builder()
+                .userId(userDto.getUserId())
+                .password(userDto.getPassword())
+                .money(userDto.getMoney() != null ? userDto.getMoney() : 10000000) // money 기본값 설정
+                .build();
+    }
 }
