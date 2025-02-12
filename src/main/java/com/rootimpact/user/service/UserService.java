@@ -31,4 +31,9 @@ public class UserService {
         return userEntity.isPresent(); // 유저가 있으면 true, 없으면 false
     }
 
+    public String searchByPhone(String phone) {
+        Optional<UserEntity> userEntity = userRepository.findByPhone(phone);
+        return userEntity.map(UserEntity::getNickname).orElse(null); // nickname 필드를 반환하거나 없으면 null 반환
+    }
+
 }

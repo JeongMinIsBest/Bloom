@@ -52,7 +52,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> signUp (
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "이름, 전화번호, 아이디, 패스워드 ",
+                    description = "전화번호, 닉네임 ",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
@@ -76,13 +76,12 @@ public class UserController {
     }
 
     @Operation(summary = "로그인 API", description = "휴대폰 번호로 로그인")
-    @PostMapping("/login")
+    @PostMapping("/login/{phone}")
     public ResponseEntity<?> login(
-            @RequestBody UserDto userDto,  // UserDto를 받아서 처리
+            @RequestParam String phone,  // UserDto를 받아서 처리
             HttpServletRequest request  // 세션을 이용하기 위해 HttpServletRequest를 받음
     ) {
         try {
-            String phone = userDto.getPhone();  // UserDto에서 phone만 가져오기
             boolean isValidUser = userService.checkLogin(phone);
 
             if (!isValidUser) {
@@ -95,14 +94,14 @@ public class UserController {
             session.setAttribute("user", phone);
 
             log.info("로그인 성공: {}", phone);
-            return ResponseEntity.ok("로그인 성공");
+            String nickname = userService.searchByPhone(phone);
+            return ResponseEntity.ok("로그인 성공 " + nickname);
 
         } catch (Exception e) {
             log.error("로그인 중 오류 발생: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 에러 입니다");
         }
     }
-
 
     // 로그아웃 API 추가
     @Operation(summary = "로그아웃 API", description = "사용자 로그아웃")
