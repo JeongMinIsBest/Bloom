@@ -22,16 +22,16 @@ public class UserEntity {
     private Long id;
 
     @Column(nullable = false, length = 50)
-    private String nickname;
+    private String userId;
 
     @Column(nullable = false, length = 15)
-    private String phone;
+    private String password;
 
 
     public static UserEntity toSaveEntity(UserDto userDto){
         UserEntity userEntity = new UserEntity();
-        userEntity.setNickname(userDto.getNickname());
-        userEntity.setPhone(userDto.getPhone());
+        userEntity.setUserId(userDto.getUserId());
+        userEntity.setPassword(userDto.getPassword());
         return userEntity;
     }
 

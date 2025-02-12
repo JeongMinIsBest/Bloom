@@ -26,24 +26,24 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "phone 중복 체크 API", description = "회원 가입 시 phone 중복인지 확인")
-    @GetMapping("/checkDuplicated/phone/{phone}")
-    public ResponseEntity<String> checkDuplicatedPhone(
-            @Parameter(description = "phone", required = true, example = "010-1234-5678")
-            @PathVariable("phone") String phone) {
-        log.info("이메일 중복 체크 요청: {}", phone);
+    @Operation(summary = "userId 중복 체크 API", description = "회원 가입 시 userId 중복인지 확인")
+    @GetMapping("/checkDuplicated/userId/{userId}")
+    public ResponseEntity<String> checkDuplicatedUserId(
+            @Parameter(description = "userId", required = true, example = "abcd")
+            @PathVariable("userId") String userId) {
+        log.info("이메일 중복 체크 요청: {}", userId);
         try {
-            boolean isDuplicated = userService.checkDuplicatedPhone(phone);
+            boolean isDuplicated = userService.checkDuplicatedUserId(userId);
 
             if (!isDuplicated) {
-                log.info("사용 가능한 번호입니다: {}", phone);
+                log.info("사용 가능한 userId입니다: {}", userId);
                 return ResponseEntity.ok("사용 가능한 phone");
             } else {
-                log.warn("중복된 폰번호입니다: {}", phone);
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 phone");
+                log.warn("중복된 userId 입니다: {}", userId);
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 userId");
             }
         } catch (Exception e) {
-            log.error("phone 중복 체크 중 오류 발생: {}", phone, e);
+            log.error("userId 중복 체크 중 오류 발생: {}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 에러 입니다");
         }
     }
@@ -52,50 +52,59 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> signUp (
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "전화번호, 닉네임 ",
+                    description = "아이디, 비밀번호 ",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(example = "{\"nickname\": \"김블룸\", \"phone\": \"010-1234-5678\"}")
+                            schema = @Schema(example = "{\"userId\": \"abcd\", \"password\": \"1234\"}")
                     )
             )
             @RequestBody UserDto user)
     {
         try {
-            if (userService.checkDuplicatedPhone(user.getPhone())) {
-                log.warn("이미 존재하는 휴대폰번호로 회원가입 시도: {}", user.getPhone());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("중복된 휴대폰 번호 입니다");
+            if (userService.checkDuplicatedUserId(user.getUserId())) {
+                log.warn("이미 존재하는 userId로 회원가입 시도: {}", user.getUserId());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("중복된 아이디 입니다");
             }
             userService.signUp(user);
-            log.info("회원가입 성공: {}", user.getPhone());
+            log.info("회원가입 성공: {}", user.getUserId());
             return ResponseEntity.accepted().body("회원 가입에 성공했습니다");
         } catch (Exception e) {
-            log.error("회원가입 중 오류 발생: {}", user.getPhone(), e);
+            log.error("회원가입 중 오류 발생: {}", user.getUserId(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 에러 입니다");
         }
     }
 
     @Operation(summary = "로그인 API", description = "휴대폰 번호로 로그인")
-    @PostMapping("/login/{phone}")
+    @PostMapping("/login")
     public ResponseEntity<?> login(
-            @RequestParam String phone,  // UserDto를 받아서 처리
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "아이디, 비밀번호 ",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(example = "{\"userId\": \"abcd\", \"password\": \"1234\"}")
+                    )
+            )
+            @RequestBody UserDto userDto,  // UserDto를 받아서 처리
             HttpServletRequest request  // 세션을 이용하기 위해 HttpServletRequest를 받음
     ) {
         try {
-            boolean isValidUser = userService.checkLogin(phone);
+            String userId = userDto.getUserId();
+            String password = userDto.getPassword();
+            boolean isValidUser = userService.checkLogin(userId, password);
 
             if (!isValidUser) {
-                log.warn("잘못된 로그인 시도: {}", phone);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("잘못된 전화번호.");
+                log.warn("잘못된 로그인 시도: {}", userId);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("잘못된 userId.");
             }
 
             // 로그인 성공 시 세션에 사용자 정보 저장
             HttpSession session = request.getSession();
-            session.setAttribute("user", phone);
+            session.setAttribute("user", userId);
 
-            log.info("로그인 성공: {}", phone);
-            String nickname = userService.searchByPhone(phone);
-            return ResponseEntity.ok("로그인 성공 " + nickname);
+            log.info("로그인 성공: {}", userId);
+            return ResponseEntity.ok("로그인 성공 " + userId);
 
         } catch (Exception e) {
             log.error("로그인 중 오류 발생: {}", e.getMessage());
@@ -103,23 +112,29 @@ public class UserController {
         }
     }
 
-    // 로그아웃 API 추가
     @Operation(summary = "로그아웃 API", description = "사용자 로그아웃")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         try {
-
             HttpSession session = request.getSession(false); // 세션이 없으면 null 반환
             if (session != null) {
+                String userId = (String) session.getAttribute("userId"); // 세션에서 userId 가져오기
                 session.invalidate(); // 세션 무효화로 사용자 정보 삭제
-            }
 
-            log.info("로그아웃 성공");
-            return ResponseEntity.ok("로그아웃 성공");
+                if (userId != null) {
+                    log.info("{} 로그아웃 성공", userId); // 로그에 userId 추가
+                    return ResponseEntity.ok(userId + " 로그아웃 성공");
+                } else {
+                    log.info("로그아웃 성공");
+                    return ResponseEntity.ok("로그아웃 성공");
+                }
+            } else {
+                log.warn("세션이 존재하지 않습니다.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("세션이 존재하지 않습니다");
+            }
         } catch (Exception e) {
             log.error("로그아웃 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 에러 입니다");
         }
     }
-
 }

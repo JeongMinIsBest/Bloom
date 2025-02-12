@@ -10,15 +10,15 @@ import lombok.*;
 @AllArgsConstructor
 public class UserDto {
     private Long id;
-    private String nickname;
-    private String phone;
+    private String userId;
+    private String password;
 
 
     public static UserDto toUserDto(UserEntity userEntity){
         UserDto userDto = new UserDto();
         userDto.setId(userEntity.getId());
-        userDto.setPhone(userEntity.getPhone());
-        userDto.setNickname(userEntity.getNickname());
+        userDto.setUserId(userEntity.getUserId());
+        userDto.setPassword(userEntity.getPassword());
 
         return userDto;
     }

@@ -17,8 +17,8 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public boolean checkDuplicatedPhone(String phone) {
-        return userRepository.findByPhone(phone).isPresent();
+    public boolean checkDuplicatedUserId(String userId) {
+        return userRepository.findByUserId(userId).isPresent();
     }
 
     public void signUp(UserDto userDto) {
@@ -26,14 +26,14 @@ public class UserService {
         userRepository.save(userEntity);
     }
 
-    public boolean checkLogin(String phone) {
-        Optional<UserEntity> userEntity = userRepository.findByPhone(phone);
-        return userEntity.isPresent(); // 유저가 있으면 true, 없으면 false
+    public boolean checkLogin(String userId, String password) {
+        Optional<UserEntity> userEntity = userRepository.findByUserId(userId);  // userId로 사용자 조회
+        if (userEntity.isPresent()) {
+            // 비밀번호 확인
+            return userEntity.get().getPassword().equals(password);
+        }
+        return false;  // userId가 없거나 비밀번호가 일치하지 않으면 false 반환
     }
 
-    public String searchByPhone(String phone) {
-        Optional<UserEntity> userEntity = userRepository.findByPhone(phone);
-        return userEntity.map(UserEntity::getNickname).orElse(null); // nickname 필드를 반환하거나 없으면 null 반환
-    }
 
 }
