@@ -1,0 +1,38 @@
+package com.rootimpact.user.entity;
+
+import com.rootimpact.user.dto.UserDto;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
+@Entity
+@Getter
+@Setter
+@Table(name = "user")
+@NoArgsConstructor
+@AllArgsConstructor
+@SuperBuilder
+public class UserEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String nickname;
+
+    @Column(nullable = false, length = 15)
+    private String phone;
+
+
+    public static UserEntity toSaveEntity(UserDto userDto){
+        UserEntity userEntity = new UserEntity();
+        userEntity.setNickname(userDto.getNickname());
+        userEntity.setPhone(userDto.getPhone());
+        return userEntity;
+    }
+
+}

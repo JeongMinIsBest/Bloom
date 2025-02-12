@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
 
     @Bean
-    public OpenAPI OpenAPI() {
+    public OpenAPI CustomOpenAPI() {
         Info info = new Info()
                 .title("Bloom")
                 .version("1.0")
