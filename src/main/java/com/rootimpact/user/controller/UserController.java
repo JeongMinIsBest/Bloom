@@ -3,6 +3,7 @@ package com.rootimpact.user.controller;
 import com.rootimpact.user.dto.UserDto;
 import com.rootimpact.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +25,28 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @Operation(summary = "phone 중복 체크 API", description = "회원 가입 시 phone 중복인지 확인")
+    @GetMapping("/checkDuplicated/phone/{phone}")
+    public ResponseEntity<String> checkDuplicatedPhone(
+            @Parameter(description = "phone", required = true, example = "010-1234-5678")
+            @PathVariable("phone") String phone) {
+        log.info("이메일 중복 체크 요청: {}", phone);
+        try {
+            boolean isDuplicated = userService.checkDuplicatedPhone(phone);
+
+            if (!isDuplicated) {
+                log.info("사용 가능한 번호입니다: {}", phone);
+                return ResponseEntity.ok("사용 가능한 phone");
+            } else {
+                log.warn("중복된 폰번호입니다: {}", phone);
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 phone");
+            }
+        } catch (Exception e) {
+            log.error("phone 중복 체크 중 오류 발생: {}", phone, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 에러 입니다");
+        }
+    }
 
     @Operation(summary = "회원가입 API", description = "회원가입 페이지를 통해 입력한 정보로 회원가입")
     @PostMapping
