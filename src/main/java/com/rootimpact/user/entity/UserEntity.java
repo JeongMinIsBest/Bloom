@@ -27,6 +27,8 @@ public class UserEntity {
     @Column(nullable = false, length = 15)
     private String password;
 
+    @Column
+
 
     public static UserEntity toSaveEntity(UserDto userDto){
         UserEntity userEntity = new UserEntity();
