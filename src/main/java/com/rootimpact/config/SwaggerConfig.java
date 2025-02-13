@@ -27,7 +27,7 @@ public class SwaggerConfig {
                 .addSecuritySchemes(jwtSchemeName, new SecurityScheme().name(jwtSchemeName)
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("Bearer").bearerFormat("JWT"));
-
+        // 안녕안녕
         // 서버 설정을 추가하여 https로 호출하도록 지정
         Server server = new Server()
                 .url("https://13.125.19.104/api") // 실제 도메인과 경로로 변경
