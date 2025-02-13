@@ -28,13 +28,14 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "아이디 중복체크 API", description = "회원가입 과정에서 userId 중복체크")
     @GetMapping("/checkDuplicated/userId/{userId}")
     public ResponseEntity<Map<String, Object>> checkDuplicatedUserId(@PathVariable("userId") String userId) {
         log.info("이메일 중복 체크 요청: {}", userId);
         try {
             boolean isDuplicated = userService.checkDuplicatedUserId(userId);
             Map<String, Object> response = Map.of(
-                    "status", isDuplicated ? 409 : 200,
+                    "status", isDuplicated ? 400 : 200,
                     "message", isDuplicated ? "중복된 userId" : "사용 가능한 userId",
                     "isDuplicated", isDuplicated
             );
