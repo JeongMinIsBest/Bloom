@@ -11,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -134,4 +137,55 @@ public class TransactionService {
 
         return new TransactionFilterResponse(priceSummary, summary);
     }
+
+    /**
+     * 사용자의 예수금 및 보유 주식 정보를 계산하여 PortfolioResponse를 반환합니다.
+     * - 예수금: UserEntity.money
+     * - 보유 주식 정보: 거래 내역을 회사별로 그룹화하여 보유 수량, 평가 금액, gap 계산
+     */
+    public PortfolioResponse getPortfolio(Long userId) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow();
+        Long availableCash = userEntity.getMoney().longValue();
+
+        // 사용자의 모든 거래 내역 조회
+        List<Transaction> transactions = transactionRepository.findAllByUserEntity(userEntity);
+
+        // 회사별로 그룹화
+        Map<String, List<Transaction>> transactionsByCompany = transactions.stream()
+                .collect(Collectors.groupingBy(Transaction::getCompanyName));
+
+        List<PositionResponse> positions = new ArrayList<>();
+        long totalStockValue = 0;
+
+        for (Map.Entry<String, List<Transaction>> entry : transactionsByCompany.entrySet()) {
+            String companyName = entry.getKey();
+            List<Transaction> companyTransactions = entry.getValue();
+
+            // 보유 수량 계산: 매수 수량 - 매도 수량
+            long totalBuy = companyTransactions.stream()
+                    .filter(t -> "매수".equals(t.getType()))
+                    .mapToLong(Transaction::getQuantity)
+                    .sum();
+            long totalSell = companyTransactions.stream()
+                    .filter(t -> "매도".equals(t.getType()))
+                    .mapToLong(Transaction::getQuantity)
+                    .sum();
+            long holdingQuantity = totalBuy - totalSell;
+            if (holdingQuantity <= 0) {
+                continue; // 보유 중이 아닌 회사는 제외
+            }
+
+            // 실시간 현재가 및 gap 조회
+            StockService.StockPrediction prediction = stockService.getStockPredictionByCompanyName(companyName);
+            long currentPrice = prediction != null ? prediction.realTimeVariation() : 0L;
+            int gap = prediction != null ? prediction.gap() : 0;
+            long evaluationAmount = holdingQuantity * currentPrice;
+            totalStockValue += evaluationAmount;
+
+            positions.add(new PositionResponse(companyName, holdingQuantity, evaluationAmount, gap));
+        }
+
+        return new PortfolioResponse(userEntity.getUserId(), availableCash, totalStockValue, positions);
+    }
+
 }
