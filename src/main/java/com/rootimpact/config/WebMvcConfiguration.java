@@ -14,7 +14,7 @@ public class WebMvcConfiguration {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://bloom-frontend-new.vercel.app/", "http://localhost:3000")  // 특정 domain 허용.
+                        .allowedOrigins("https://bloom-frontend-new.vercel.app", "http://localhost:3000")  // 특정 domain 허용.
                         .allowedHeaders("*")  // 모든 Header 허용
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH") // 허용할 HTTP 메서드
                         .exposedHeaders("Authorization", "RefreshToken") // 클라이언트에서 접근할 수 있도록 노출할 헤더
