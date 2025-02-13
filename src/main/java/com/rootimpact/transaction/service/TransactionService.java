@@ -57,6 +57,7 @@ public class TransactionService {
     public TransactionCreateResponse createTransaction(TransactionCreateRequest request) {
         Transaction transaction = new Transaction();
         UserEntity userEntity = userRepository.findById(1L).orElseThrow();
+        int money = userEntity.getMoney();
         transaction.setUserEntity(userEntity);
         transaction.setCompanyName(request.companyName());
         transaction.setAmount(request.amount());
@@ -64,6 +65,13 @@ public class TransactionService {
         transaction.setType(request.type());
         transaction.setDate(Date.valueOf(request.date()));
 
+        if (request.type().equals("매수")) {
+            userEntity.setMoney((int) (money - (request.amount() * request.quantity())));
+        } else {
+            userEntity.setMoney((int) (money + (request.amount() * request.quantity())));
+        }
+
+        userRepository.save(userEntity);
         transactionRepository.save(transaction);
         return new TransactionCreateResponse(transaction.getId());
     }
