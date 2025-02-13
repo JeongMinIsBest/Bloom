@@ -36,7 +36,7 @@ public class StockController {
     })
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter getStock() {
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(600000L);
 
         // ScheduledExecutorService를 사용하여 1초마다 작업 수행
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();

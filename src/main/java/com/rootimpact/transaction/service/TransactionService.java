@@ -2,10 +2,7 @@ package com.rootimpact.transaction.service;
 
 import com.rootimpact.stock.service.StockService;
 import com.rootimpact.transaction.dto.request.TransactionCreateRequest;
-import com.rootimpact.transaction.dto.response.TransactionCreateResponse;
-import com.rootimpact.transaction.dto.response.TransactionDetailResponse;
-import com.rootimpact.transaction.dto.response.TransactionFilterResponse;
-import com.rootimpact.transaction.dto.response.TransactionSummaryResponse;
+import com.rootimpact.transaction.dto.response.*;
 import com.rootimpact.transaction.entity.Transaction;
 import com.rootimpact.transaction.repository.TransactionRepository;
 import com.rootimpact.user.entity.UserEntity;
@@ -22,7 +19,7 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
-    // StockService 주입: 실시간 현재가 조회에 사용
+    // StockService 주입: 실시간 현재가 및 gap 조회에 사용
     private final StockService stockService;
 
     public TransactionDetailResponse getTransaction(Long id) {
@@ -69,16 +66,21 @@ public class TransactionService {
     }
 
     /**
-     * 사용자 ID와 회사명으로 거래 내역을 최신순(날짜 내림차순)으로 필터링하고
-     * 해당 거래 내역을 기반으로 요약 정보를 계산하여 반환합니다.
-     *
-     * *실시간 현재가는 StockService.getStockPredictionByCompanyName()를 통해 조회합니다.
+     * 실시간 가격정보를 StockService를 통해 조회하여 반환합니다.
      */
-    public TransactionFilterResponse filterTransactions(Long userId, String companyName) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow();
-        // 거래 내역 필터링 (최신 순)
-        List<Transaction> transactions = transactionRepository.findByUserEntityAndCompanyNameOrderByDateDesc(userEntity, companyName);
+    public TransactionPriceSummaryResponse getPriceSummary(String companyName) {
+        StockService.StockPrediction prediction = stockService.getStockPredictionByCompanyName(companyName);
+        long currentPrice = prediction != null ? prediction.realTimeVariation() : 0L;
+        int gap = prediction != null ? prediction.gap() : 0;
+        return new TransactionPriceSummaryResponse(currentPrice, gap);
+    }
 
+    /**
+     * 사용자와 회사명을 기준으로 거래 내역을 최신순으로 정렬하여 리스트로 반환합니다.
+     */
+    public TransactionFilterListResponse getTransactionFilterList(Long userId, String companyName) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow();
+        List<Transaction> transactions = transactionRepository.findByUserEntityAndCompanyNameOrderByDateDesc(userEntity, companyName);
         List<TransactionDetailResponse> transactionResponses = transactions.stream()
                 .map(transaction -> new TransactionDetailResponse(
                         transaction.getId(),
@@ -90,46 +92,46 @@ public class TransactionService {
                         transaction.getDate().toString()
                 ))
                 .toList();
+        return new TransactionFilterListResponse(transactionResponses);
+    }
 
-        // 요약 정보 계산 (가정: "매수", "매도" 문자열로 구분)
+    /**
+     * 사용자 ID와 회사명으로 거래 내역을 최신순(날짜 내림차순)으로 필터링하고,
+     * 실시간 가격정보와 거래 요약 정보를 계산하여 TransactionFilterResponse를 반환합니다.
+     */
+    public TransactionFilterResponse filterTransactions(Long userId, String companyName) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow();
+        List<Transaction> transactions = transactionRepository.findByUserEntityAndCompanyNameOrderByDateDesc(userEntity, companyName);
+
+        // 정적 거래 내역 기반 계산
         long totalBuyQuantity = transactions.stream()
                 .filter(t -> "매수".equals(t.getType()))
                 .mapToLong(Transaction::getQuantity)
                 .sum();
-
         long totalSellQuantity = transactions.stream()
                 .filter(t -> "매도".equals(t.getType()))
                 .mapToLong(Transaction::getQuantity)
                 .sum();
-
         long holdingQuantity = totalBuyQuantity - totalSellQuantity;
-
-        // "매수" 거래의 총 비용 (거래당 금액 * 수량)
         long totalBuyCost = transactions.stream()
                 .filter(t -> "매수".equals(t.getType()))
                 .mapToLong(t -> t.getAmount() * t.getQuantity())
                 .sum();
-
-        // 평균 매입 단가 (전체 매수 비용 / 전체 매수 수량)
         double averageBuyPrice = totalBuyQuantity > 0 ? (double) totalBuyCost / totalBuyQuantity : 0.0;
         long purchaseAmount = (long) (holdingQuantity * averageBuyPrice);
 
-        // 실시간 현재가는 StockService에서 해당 회사의 StockPrediction으로 조회
+        // 실시간 현재가 및 gap 조회
         StockService.StockPrediction prediction = stockService.getStockPredictionByCompanyName(companyName);
         long currentPrice = prediction != null ? prediction.realTimeVariation()
                 : (transactions.isEmpty() ? 0L : transactions.get(0).getAmount());
+        int gap = prediction != null ? prediction.gap() : 0;
         long evaluationAmount = holdingQuantity * currentPrice;
-
         double rawRateOfReturn = purchaseAmount != 0 ? ((double) (evaluationAmount - purchaseAmount) / purchaseAmount) * 100 : 0.0;
         double rateOfReturn = Math.round(rawRateOfReturn * 100.0) / 100.0;
 
-        TransactionSummaryResponse summaryResponse = new TransactionSummaryResponse(
-                rateOfReturn,
-                holdingQuantity,
-                evaluationAmount,
-                purchaseAmount
-        );
+        TransactionPriceSummaryResponse priceSummary = new TransactionPriceSummaryResponse(currentPrice, gap);
+        TransactionSummaryResponse summary = new TransactionSummaryResponse(currentPrice, gap, rateOfReturn, holdingQuantity, evaluationAmount, purchaseAmount);
 
-        return new TransactionFilterResponse(currentPrice, summaryResponse, transactionResponses);
+        return new TransactionFilterResponse(priceSummary, summary);
     }
 }

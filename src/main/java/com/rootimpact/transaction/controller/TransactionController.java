@@ -1,9 +1,7 @@
 package com.rootimpact.transaction.controller;
 
 import com.rootimpact.transaction.dto.request.TransactionCreateRequest;
-import com.rootimpact.transaction.dto.response.TransactionCreateResponse;
-import com.rootimpact.transaction.dto.response.TransactionDetailResponse;
-import com.rootimpact.transaction.dto.response.TransactionFilterResponse;
+import com.rootimpact.transaction.dto.response.*;
 import com.rootimpact.transaction.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,12 +38,7 @@ public class TransactionController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<TransactionDetailResponse> getTransaction(
-            @Parameter(
-                    name = "id",
-                    description = "조회할 거래 내역의 ID",
-                    required = true,
-                    example = "1"
-            )
+            @Parameter(name = "id", description = "조회할 거래 내역의 ID", required = true, example = "1")
             @PathVariable("id") Long id
     ) {
         TransactionDetailResponse response = transactionService.getTransaction(id);
@@ -62,12 +55,7 @@ public class TransactionController {
     })
     @GetMapping("/{userId}/list")
     public ResponseEntity<List<TransactionDetailResponse>> getAllTransactions(
-            @Parameter(
-                    name = "userId",
-                    description = "조회할 사용자의 ID",
-                    required = true,
-                    example = "10"
-            )
+            @Parameter(name = "userId", description = "조회할 사용자의 ID", required = true, example = "10")
             @PathVariable("userId") Long userId
     ) {
         List<TransactionDetailResponse> responses = transactionService.getAllTransactions(userId);
@@ -84,10 +72,7 @@ public class TransactionController {
     })
     @PostMapping
     public ResponseEntity<TransactionCreateResponse> createTransaction(
-            @Parameter(
-                    description = "생성할 거래 내역 정보",
-                    required = true
-            )
+            @Parameter(description = "생성할 거래 내역 정보", required = true)
             @RequestBody TransactionCreateRequest request
     ) {
         TransactionCreateResponse response = transactionService.createTransaction(request);
@@ -95,33 +80,22 @@ public class TransactionController {
     }
 
     @Operation(
-            summary = "실시간 거래 내역 필터링 스트림",
-            description = "주어진 사용자 ID와 회사명에 해당하는 거래 내역을 최신 순으로 정렬하여 실시간으로 스트리밍하고, 거래 요약 정보를 함께 전송합니다."
+            summary = "실시간 가격정보 스트림",
+            description = "외부 AI 모델을 통해 실시간 가격 및 gap 정보를 SSE로 전송합니다."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "실시간 데이터 스트림 전송 성공"),
-            @ApiResponse(responseCode = "404", description = "해당 사용자를 찾을 수 없음")
+            @ApiResponse(responseCode = "500", description = "내부 서버 오류")
     })
-    @GetMapping(value = "/{userId}/filter", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamFilterTransactions(
-            @Parameter(
-                    name = "userId",
-                    description = "조회할 사용자의 ID",
-                    required = true,
-                    example = "10"
-            )
+    @GetMapping(value = "/{userId}/price", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamPriceSummary(
+            @Parameter(name = "userId", description = "조회할 사용자의 ID", required = true, example = "10")
             @PathVariable("userId") Long userId,
-            @Parameter(
-                    name = "companyName",
-                    description = "조회할 회사명",
-                    required = true,
-                    example = "ExampleCompany"
-            )
+            @Parameter(name = "companyName", description = "조회할 회사명", required = true, example = "ExampleCompany")
             @RequestParam("companyName") String companyName
     ) {
-        SseEmitter emitter = new SseEmitter();
-
-        // ScheduledExecutorService를 사용하여 2초마다 거래 내역과 요약 정보를 갱신하여 전송
+        // 타임아웃: 10분(600,000ms)
+        SseEmitter emitter = new SseEmitter(600000L);
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(() -> {
             try {
@@ -132,11 +106,31 @@ public class TransactionController {
                 scheduler.shutdown();
             }
         }, 0, 2, TimeUnit.SECONDS);
-
-        // 클라이언트가 연결 종료되거나 타임아웃될 때 스케줄러 종료
         emitter.onCompletion(scheduler::shutdown);
         emitter.onTimeout(scheduler::shutdown);
-
         return emitter;
+    }
+
+    /**
+     * 정적인 거래 내역 리스트 조회 엔드포인트
+     */
+    @Operation(
+            summary = "거래 내역 리스트 조회",
+            description = "DB에 저장된 거래 내역(회사명 필터 적용)을 최신 순으로 정렬하여 반환합니다."
+    )
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "해당 사용자를 찾을 수 없음")
+    })
+    @GetMapping("/{userId}/filter")
+    public ResponseEntity<TransactionFilterListResponse> getTransactionFilterList(
+            @Parameter(name = "userId", description = "조회할 사용자의 ID", required = true, example = "10")
+            @PathVariable("userId") Long userId,
+            @Parameter(name = "companyName", description = "조회할 회사명", required = true, example = "ExampleCompany")
+            @RequestParam("companyName") String companyName
+    ) {
+        TransactionFilterListResponse response = transactionService.getTransactionFilterList(userId, companyName);
+        return ResponseEntity.ok(response);
     }
 }
