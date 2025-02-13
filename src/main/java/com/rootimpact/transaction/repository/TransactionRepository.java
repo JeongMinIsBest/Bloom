@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     List<Transaction> findAllByUserEntity(UserEntity userEntity);
+    List<Transaction> findByUserEntityAndCompanyNameOrderByDateDesc(UserEntity userEntity, String companyName);
 }
