@@ -33,9 +33,10 @@ public class SwaggerConfig {
                 .url("https://13.125.19.104/api") // 실제 도메인과 경로로 변경
                 .description("Production server");
 
-        return new OpenAPI().components(new Components())
+        return new OpenAPI()
+                .components(components)
                 .info(info)
                 .addSecurityItem(securityRequirement)
-                .components(components);
+                .addServersItem(server); // servers에 https 설정 추가
     }
 }
