@@ -39,7 +39,7 @@ public class TransactionService {
     }
 
     public List<TransactionDetailResponse> getAllTransactions(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow();
+        UserEntity userEntity = userRepository.findById(1L).orElseThrow();
         List<Transaction> transactions = transactionRepository.findAllByUserEntity(userEntity);
         return transactions.stream()
                 .map(transaction -> new TransactionDetailResponse(
@@ -56,7 +56,7 @@ public class TransactionService {
 
     public TransactionCreateResponse createTransaction(TransactionCreateRequest request) {
         Transaction transaction = new Transaction();
-        UserEntity userEntity = userRepository.findById(request.userId()).orElseThrow();
+        UserEntity userEntity = userRepository.findById(1L).orElseThrow();
         transaction.setUserEntity(userEntity);
         transaction.setCompanyName(request.companyName());
         transaction.setAmount(request.amount());
@@ -82,7 +82,7 @@ public class TransactionService {
      * 사용자와 회사명을 기준으로 거래 내역을 최신순으로 정렬하여 리스트로 반환합니다.
      */
     public TransactionFilterListResponse getTransactionFilterList(Long userId, String companyName) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow();
+        UserEntity userEntity = userRepository.findById(1L).orElseThrow();
         List<Transaction> transactions = transactionRepository.findByUserEntityAndCompanyNameOrderByDateDesc(userEntity, companyName);
         List<TransactionDetailResponse> transactionResponses = transactions.stream()
                 .map(transaction -> new TransactionDetailResponse(
@@ -103,7 +103,7 @@ public class TransactionService {
      * 실시간 가격정보와 거래 요약 정보를 계산하여 TransactionFilterResponse를 반환합니다.
      */
     public TransactionFilterResponse filterTransactions(Long userId, String companyName) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow();
+        UserEntity userEntity = userRepository.findById(1L).orElseThrow();
         List<Transaction> transactions = transactionRepository.findByUserEntityAndCompanyNameOrderByDateDesc(userEntity, companyName);
 
         // 정적 거래 내역 기반 계산
@@ -144,7 +144,7 @@ public class TransactionService {
      * - 보유 주식 정보: 거래 내역을 회사별로 그룹화하여 보유 수량, 평가 금액, gap 계산
      */
     public PortfolioResponse getPortfolio(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow();
+        UserEntity userEntity = userRepository.findById(1L).orElseThrow();
         Long availableCash = userEntity.getMoney().longValue();
 
         // 사용자의 모든 거래 내역 조회

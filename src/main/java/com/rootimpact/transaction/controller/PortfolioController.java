@@ -1,29 +1,22 @@
 package com.rootimpact.transaction.controller;
 
-import com.rootimpact.stock.service.StockService;
 import com.rootimpact.transaction.dto.response.PortfolioResponse;
-import com.rootimpact.transaction.dto.response.PositionResponse;
-import com.rootimpact.transaction.entity.Transaction;
-import com.rootimpact.transaction.repository.TransactionRepository;
 import com.rootimpact.transaction.service.TransactionService;
-import com.rootimpact.user.entity.UserEntity;
-import com.rootimpact.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/portfolio")
@@ -32,10 +25,6 @@ import java.util.stream.Collectors;
 public class PortfolioController {
 
     private final TransactionService transactionService;
-    private final UserRepository userRepository;
-    // StockService 주입: 실시간 현재가 및 gap 조회에 사용
-    private final StockService stockService;
-    private final TransactionRepository transactionRepository;
 
     @Operation(
             summary = "실시간 포트폴리오 정보 스트림",
