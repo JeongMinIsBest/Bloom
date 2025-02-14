@@ -28,7 +28,7 @@ public class UserEntity {
     private String password;
 
     @Column(nullable = false)
-    private Integer money; // Integer로 변경
+    private Integer money; // Iㅖnteger로 변경
 
     @PrePersist
     public void prePersist() {
