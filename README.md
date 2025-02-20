@@ -110,5 +110,7 @@
 <br>
 
 ### Infra
--
+- Amazon EC2 인스턴스 1개 내에서, 백그라운드로 Backend, AI 서버를 실행시켰습니다.
+- 로드 밸런싱 및 HTTPS 적용을 위해 Nginx를 사용했습니다. 
+- Vercel로 Frontend Github를 연동하여 빠르게 배포하였습니다.
 
