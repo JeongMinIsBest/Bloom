@@ -43,12 +43,8 @@
 <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=white">
 <img src="https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white">
 
-
-
-
-
 ### Infra
-<img src="https://img.shields.io/badge/Amazon%20EC2-F90?logo=amazonec2&logoColor=fff&style=for-the-badge">
+<img src="https://img.shields.io/badge/Amazon%20EC2-F90?logo=amazonec2&logoColor=fff&style=for-the-badge"> <img src="https://img.shields.io/badge/amazon rds-527fff?logo=amazonrds&logoColor=fff&style=for-the-badge">
 <img src="https://img.shields.io/badge/NGINX-009639?logo=nginx&logoColor=fff&style=for-the-badge">
 
 ### Team Collaboration Tools
@@ -97,6 +93,8 @@
 
 <br>
 
+
+
 # 🎇 서비스 이용 화면
 
 
@@ -105,6 +103,13 @@
 <br>
 
 
+# 🛠️ 사용 기술
 
+### AI
+- 
 
+<br>
+
+### Infra
+-
 
