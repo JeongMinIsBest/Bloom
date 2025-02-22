@@ -144,7 +144,7 @@
   |:------:|:------:|:------:|
   | 강수량분석 | 기상청 기상자료개방포털 | https://data.kma.go.kr/stcs/grnd/grndRnList.do?pgmNo=69 |
   | 기온분석 | 기상청 기상자료개방포털 |  https://data.kma.go.kr/stcs/grnd/grndTaList.do?pgmNo=70 |
-  | KOSPI 상위 10개 종목 | KRX | FinanceDataReader |
+  | KOSPI/n 상위 10개 종목 | KRX | FinanceDataReader |
 
 
 <br>
