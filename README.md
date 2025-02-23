@@ -1,4 +1,4 @@
-<h3>🌱 Google X 루트임팩트 AI 해커톤 🌱 </h3>
+<h2>🌱 Google X 루트임팩트 AI 해커톤 🧑🏻‍💻 </h2>
 <img width="378" alt="Image" src="https://github.com/user-attachments/assets/e8d8643e-b025-45d4-9602-52593a8b0e97" />
 
 
