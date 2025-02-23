@@ -10,6 +10,9 @@
 <![image](/uploads/a599f2681a5cffea8a242278a4e31d5e/image.png)" style="width:300px ">
 </div>
 
+> Google.org가 후원하는 지역 인재 기반 해커톤
+> 지역 사회 발전을 위한 솔루션 개발
+
 
 
 # 팀원 소개
