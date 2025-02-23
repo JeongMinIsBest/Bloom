@@ -190,9 +190,11 @@
 | <img src="https://github.com/user-attachments/assets/cbce7211-5b68-4f32-a57a-2ff8466ec95d" width="500">| ![Image](https://github.com/user-attachments/assets/06fc6fbd-4812-41dd-ae41-fa2736c0d822) |
 
 
+<br>
+<br>
 
-# 🛠️ 사용 기술
-
+# 🛠️ 구현 내용
+------------------------
 ### AI
 - 주가 예측의 단기적인 변동성 및 다변수 예측 가능성을 고려하여 XGBoost를 바탕으로 AI 모델을 구축했습니다.
 - 강수량 데이터는 결측치가 많이 발생하는 특성을 고려하여 선형 보간법 및 로그 변환을 적용했습니다.
