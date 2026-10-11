@@ -21,7 +21,7 @@
 
 | <img src="https://github.com/sungholion.png" width="100"/> | <img src="https://github.com/yhkkkkxx.png" width="100"/> | <img src="https://github.com/JeongMinIsBest.png" width="100"/> | <img src="https://github.com/daemin-kim.png" width="100"/> | <img src="https://github.com/daeminkim.png" width="100"/> | <img src="https://github.com/daeminkim.png" width="100"/> |
 |:---------------------------------------------------------:|:-------------------------------------------------------:|:----------------------------------------------------------:|:---------------------------------------------------------:|:---------------------------------------------------------:|:---------------------------------------------------------:|
-|       [조성호 - BE, Infra](https://github.com/sungholion)       |       [김하영 - FE](https://github.com/yhkkkkxx)       |       [임정민 - AI](https://github.com/JeongMinIsBest)       |       [김대민 - BE](https://github.com/daemin-kim)       |       [김규민 - PM]()       |       [최슬아 - Design]()       |
+|       [조성호 - BE, Infra](https://github.com/sungholion)       |       [김하영 - FE](https://github.com/yhkkkkxx)       |       [임정민 - AI](https://github.com/moriselle)       |       [김대민 - BE](https://github.com/daemin-kim)       |       [김규민 - PM]()       |       [최슬아 - Design]()       |
 </div>
 
 
